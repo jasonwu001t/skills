@@ -1,0 +1,11 @@
+{
+  "repos": [
+    {
+      "name": "skills",
+      "path": "~/.claude/skills",
+      "remote": "origin",
+      "branch": "main",
+      "commit_prefix": "Sync skills"
+    }
+  ]
+}

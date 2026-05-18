@@ -10,6 +10,9 @@ venv/
 # Node
 node_modules/
 
+# github-sync: per-user private repo list (ship config.example.json only)
+github-sync/config.json
+
 # Skill runtime output / scratch data (regenerated on run)
 wsj-news/wsj_articles.json
 **/output/
