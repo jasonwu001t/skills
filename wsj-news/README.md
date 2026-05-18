@@ -1,72 +1,41 @@
-# WSJ News Scraper Agent Skill
+# WSJ News Scraper — skill
 
-An agent skill for continuously monitoring and collecting top articles from The Wall Street Journal.
+Captures the top articles from The Wall Street Journal homepage into a
+deduplicated, timestamped JSON dataset, suitable for repeated runs that build a
+history of what WSJ featured over time.
 
 ## Files
 
-- `SKILL.md` - Agent skill definition with workflow instructions
-- `process_articles.py` - Python script for data processing and storage
-- `wsj_articles.json` - Data file (created automatically on first run)
+- `SKILL.md` — skill definition (workflow + when it triggers)
+- `scripts/process_articles.py` — stdlib-only processor: dedup, timestamps, storage
+- `wsj_articles.json` — dataset, created next to this skill on first run (gitignored)
 
-## Features
+## Behavior
 
-- **Deduplication**: Automatically prevents duplicate articles
-- **Timestamping**: Tracks when articles first appeared and last seen
-- **Incremental updates**: Designed for repeated runs throughout the day
-- **Scrape tracking**: Counts how many times each article appeared
+- **Deduplication** by article URL (won't add the same story twice)
+- **Timestamping** — `first_seen` / `last_seen` per article
+- **Incremental** — re-running updates existing entries and adds new ones
+- **Scrape tracking** — `scrape_count` = times the article reappeared
 
-## Data Schema
-
-```json
-{
-  "last_updated": "ISO 8601 timestamp",
-  "articles": [
-    {
-      "id": "unique-hash",
-      "title": "Article Title",
-      "url": "https://wsj.com/article-url",
-      "first_seen": "ISO 8601 timestamp",
-      "last_seen": "ISO 8601 timestamp",
-      "scrape_count": 3
-    }
-  ]
-}
-```
-
-## Usage with Agent
-
-The agent will:
-1. Use browser tools to navigate to wsj.com
-2. Extract article titles and URLs from the page
-3. Call the Python script to process and store the data
-
-Example agent command:
-```
-"Go to wsj.com and collect the top 10 articles"
-```
-
-## Manual Testing
-
-Test the script directly:
+## Manual test
 
 ```bash
-python process_articles.py --articles '[
-  {"title": "Test Article 1", "url": "https://wsj.com/test1"},
-  {"title": "Test Article 2", "url": "https://wsj.com/test2"}
+python3 ~/.claude/skills/wsj-news/scripts/process_articles.py --articles '[
+  {"title": "Test Article 1", "url": "https://www.wsj.com/test1"},
+  {"title": "Test Article 2", "url": "https://www.wsj.com/test2"}
 ]'
 ```
 
-## Scheduling
-
-For continuous monitoring, set up a cron job or scheduled task:
-
-```bash
-# Run every 2 hours
-0 */2 * * * cd ~/wsj-news-scraper && /path/to/agent "scrape wsj news"
-```
+Writes/updates `~/.claude/skills/wsj-news/wsj_articles.json` regardless of the
+directory you run it from.
 
 ## Requirements
 
-- Python 3.6+
-- Browser automation tools (for agent)
-- No external Python dependencies (uses stdlib only)
+- Python 3.6+ (standard library only — nothing to install)
+- Any browser-automation capability available in the host (used to load wsj.com)
+
+## Scheduling
+
+For continuous monitoring, drive the skill on a recurring basis from your agent
+of choice (e.g. Claude Code's `/schedule` or `/loop`, or an OS cron job that
+invokes the agent). The dataset accumulates across runs.

@@ -64,7 +64,7 @@ Note on points totals: when `passengers=a2t0c0i0`, listing prices are **totals f
 
 3. **Build the combo list**: every (outbound, return) pair where `return − outbound ∈ [min_days, max_days]`.
 
-4. **Sweep**: for each combo, set the Chrome tab to the deep-link URL, sleep ~9–11s for SPA hydration, run the parser JS, save JSON to `/tmp/va_search/combo_<MM>-<DD>_<MM>-<DD>.json`. If the URL ends up at `identity.virginatlantic.com`, run the login flow (see "Login recovery").
+4. **Sweep**: for each combo, set the Chrome tab to the deep-link URL, sleep ~9–11s for SPA hydration, run the parser JS, save JSON to `$OUT_DIR/combo_<YYYY-MM-DD>_<YYYY-MM-DD>.json` (default `OUT_DIR` is `~/va-reward-reports/`). If the URL ends up at `identity.virginatlantic.com`, run the login flow (see "Login recovery").
 
 5. **Analyze**: load all combo JSONs, build a table sorted by Economy Classic points, surface the cheapest. Open the cheapest combo's URL in Chrome for the user to review/book.
 
@@ -73,7 +73,7 @@ Note on points totals: when `passengers=a2t0c0i0`, listing prices are **totals f
 Run these via `${CLAUDE_SKILL_DIR}/scripts/<file>`. The skill dir resolves to `~/.claude/skills/va-reward-search/`.
 
 - **`scripts/parse.js`** — JS injected via Chrome's `execute javascript`. Extracts `pairs` (calendar dates → points) and `cabins` (Economy Classic / Premium / Upper Class with points + tax) from the current results page. Returns JSON. Works for both `en-US/flights/search/slice` and intermediate states.
-- **`scripts/sweep.sh`** — Bash driver. Reads `COMBOS_FILE` (one `YYYY-MM-DD YYYY-MM-DD` per line), navigates Chrome per combo, calls `parse.js`, saves outputs to `OUT_DIR/combo_<out>_<ret>.json`, prints one-line price per combo. Required env: `ORIGIN`, `DEST`, `COMBOS_FILE`. Optional: `OUT_DIR` (default `/tmp/va_search`), `PAX` (default `a1t0c0i0`).
+- **`scripts/sweep.sh`** — Bash driver. Reads `COMBOS_FILE` (one `YYYY-MM-DD YYYY-MM-DD` per line), navigates Chrome per combo, calls `parse.js`, saves outputs to `OUT_DIR/combo_<out>_<ret>.json`, prints one-line price per combo. Required env: `ORIGIN`, `DEST`, `COMBOS_FILE`. Optional: `OUT_DIR` (default `~/va-reward-reports`), `PAX` (default `a2t0c0i0` = 2 adults).
 - **`scripts/analyze.py`** — Loads `OUT_DIR/combo_*.json`, builds a terminal table sorted by Economy Classic points, prints top-N and the single cheapest. Usage: `python3 analyze.py [OUT_DIR] [TOP_N]`.
 - **`scripts/report.py`** — Renders the same data as a self-contained HTML report (no external assets) with a hero card for the cheapest combo, a sortable table, a points heatmap (green→red), tax columns, and direct booking links per row. Usage: `python3 report.py [OUT_DIR] [--origin SEA --dest LHR --pax a1t0c0i0] [--out path.html]`. Origin/dest are inferred from the first combo's URL if not passed. Default output: `OUT_DIR/report.html`. Open it via `osascript -e 'tell application "Google Chrome" to open location "file://…/report.html"'`.
 

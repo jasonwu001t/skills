@@ -11,7 +11,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Dict
 
-DATA_FILE = Path("wsj_articles.json")
+# Store the dataset next to the skill (one level up from scripts/) so it always
+# lands in the same place regardless of the current working directory.
+DATA_FILE = Path(__file__).resolve().parent.parent / "wsj_articles.json"
 
 
 def generate_article_id(url: str) -> str:

@@ -37,6 +37,18 @@ repo paths are hardcoded in the skill itself.
    the suggested manual fix — do **not** auto-pull, rebase, merge, or
    force-push. This skill only ever does `add` → `commit` → `push`.
 
+## Example
+
+**Input:** "back up: finished the wsj-news fixes"
+**Action:** `bash ~/.claude/skills/github-sync/scripts/sync.sh "back up: finished the wsj-news fixes"`
+**Output (reported back to the user):**
+```
+skills — pushed to origin/main
+  commit: back up: finished the wsj-news fixes
+Done. 1 repo(s) pushed.
+```
+If nothing changed, report it plainly instead: `skills — already up to date, nothing to back up.`
+
 ## Notes / constraints
 
 - Never force-push, create branches, or modify repos not listed in

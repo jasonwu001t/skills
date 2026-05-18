@@ -1,49 +1,48 @@
 ---
-name: scraping-wsj-news
-description: Scrapes top articles from wsj.com and stores them in JSON format. Use when the user asks to collect, scrape, or monitor WSJ news articles, headlines, or top stories.
+name: wsj-news
+description: Scrape the current top headlines/articles from the Wall Street Journal homepage (wsj.com) and store them in a deduplicated, timestamped JSON dataset that tracks when each article first and last appeared and how often it resurfaced. Use whenever the user wants to collect, scrape, snapshot, track, or monitor WSJ news, headlines, top stories, or front-page articles — including recurring checks throughout the day (e.g. "grab the top WSJ stories right now", "snapshot the WSJ front page", "what is the WSJ leading with", "keep a running log of WSJ headlines every couple of hours"). Make sure to use this skill even when the user doesn't say the word "scrape" — any request to capture or watch WSJ's top stories over time should trigger it.
+when_to_use: User wants the WSJ homepage's current top articles captured into, or monitored over time in, a JSON dataset. Triggers on collect/scrape/snapshot/track/monitor WSJ headlines or top stories. NOT for other news outlets, extracting full paywalled article body text, or a one-off read of a single already-known URL.
 ---
 
 # WSJ News Scraper
 
-Collects top articles from The Wall Street Journal homepage and stores them in a structured JSON format.
+Collects the top articles from The Wall Street Journal homepage into a
+structured, deduplicated JSON dataset. Designed to be run repeatedly — each run
+adds genuinely new articles and updates `last_seen` / `scrape_count` on ones
+already captured, so the file becomes a history of what WSJ featured over time.
 
 ## Workflow
 
-1. **Open browser and navigate**: Use browser tools to go to wsj.com
-2. **Extract articles**: Read the page DOM to find article titles and links
-3. **Process data**: Run the Python script to store articles
-4. **Verify**: Check that data was saved correctly
+1. **Open wsj.com.** Use whatever browser-automation capability the current
+   environment provides — a built-in browser/computer-use tool, Chrome driven
+   via `osascript`, an MCP browser server, etc. This skill deliberately does not
+   hard-code a tool: it just needs the homepage loaded and its rendered DOM/HTML
+   readable. (Tool names differ between hosts; capability is what matters.)
+2. **Extract the top ~10 articles.** From the homepage DOM, collect each
+   article's **title** and **absolute URL**. If the page yields relative links,
+   prefix them with `https://www.wsj.com`. Do not scrape article bodies — only
+   the headline + link from the front page (timestamps are added by the script).
+3. **Store the data** by passing the articles to the processor script (below).
+4. **Verify** the summary the script prints (new vs. updated vs. total).
 
-## Step 1: Navigate to WSJ
+## Storing the data
 
-Use browser:launch_chrome to open Chrome, then browser:navigate to go to https://wsj.com
-
-## Step 2: Extract article data
-
-Use browser:read_dom to get page content. Look for article elements in the DOM. Extract:
-- Article title
-- Article URL
-- Timestamp (current time when scraped)
-
-Collect the top 10 articles from the homepage.
-
-## Step 3: Store data
-
-Run the processing script:
+Run the processor, passing a JSON array of `{title, url}` objects:
 
 ```bash
-python process_articles.py --articles '[article_data_json]'
+python3 ~/.claude/skills/wsj-news/scripts/process_articles.py --articles '[
+  {"title": "Headline one", "url": "https://www.wsj.com/..."},
+  {"title": "Headline two", "url": "https://www.wsj.com/..."}
+]'
 ```
 
-The script handles:
-- Deduplication (won't add duplicate URLs)
-- Timestamping (adds scrape time)
-- Data validation
-- Incremental updates throughout the day
+The script writes/updates `~/.claude/skills/wsj-news/wsj_articles.json` — a
+fixed location next to the skill, independent of your current directory. It
+dedupes by URL, sets `first_seen`/`last_seen`, increments `scrape_count`, sorts
+by most-recently-seen, and prints a summary. It uses **only the Python standard
+library** — there is nothing to `pip install`.
 
-## Data schema
-
-Articles are stored in `wsj_articles.json`:
+## Data schema (output)
 
 ```json
 {
@@ -52,7 +51,7 @@ Articles are stored in `wsj_articles.json`:
     {
       "id": "unique-hash",
       "title": "Article Title",
-      "url": "https://wsj.com/article-url",
+      "url": "https://www.wsj.com/article-url",
       "first_seen": "2026-03-08T08:00:00",
       "last_seen": "2026-03-08T12:00:00",
       "scrape_count": 3
@@ -61,17 +60,22 @@ Articles are stored in `wsj_articles.json`:
 }
 ```
 
-## Repeatable process
+## Recurring monitoring
 
-This skill is designed for continuous monitoring:
-- Run multiple times per day
-- New articles are added automatically
-- Existing articles update their `last_seen` timestamp
-- `scrape_count` tracks how many times an article appeared
+Re-running accumulates history rather than overwriting: a returning headline
+keeps its `first_seen` and gets a bumped `scrape_count` and fresh `last_seen`,
+so you can later see which stories WSJ kept on the front page longest.
 
-## Error handling
+## Example
 
-If the script fails:
-1. Check that article data is valid JSON
-2. Verify the data file is writable
-3. Ensure Python dependencies are installed: `pip install hashlib json datetime`
+**Input:** "Snapshot the WSJ front page and add it to my tracker."
+**Output:** Chrome opened to wsj.com, top ~10 headlines + URLs extracted, script
+run; it reports e.g. `New: 4 · Updated: 6 · Total: 38` and updates
+`wsj_articles.json`.
+
+## Notes / troubleshooting
+
+- Pure stdlib; no dependencies. If the script errors, the usual causes are: the
+  `--articles` value isn't valid JSON, an article is missing `title` or `url`
+  (those are skipped with a warning), or `wsj_articles.json` isn't writable.
+- Keep URLs absolute so dedup-by-URL stays consistent across runs.
