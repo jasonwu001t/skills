@@ -10,6 +10,12 @@ venv/
 # Node
 node_modules/
 
+# Marketplace / plugin-installed skills (third-party, reinstallable via /plugin).
+# These are NOT authored here and must not be backed up to this repo. Add any
+# future marketplace-installed skill folders to this list.
+skill-creator/
+mcp-builder/
+
 # github-sync: per-user private repo list (ship config.example.json only)
 github-sync/config.json
 

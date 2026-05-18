@@ -57,3 +57,9 @@ If nothing changed, report it plainly instead: `skills — already up to date, n
   `config.example.json` and stop.
 - Requires `python3` (used only to parse the JSON config).
 - "Already up to date" is a success, not an error — report it plainly.
+- `sync.sh` runs `git add -A`, so it stages **everything** in the repo that
+  isn't gitignored — including any third-party or tool-installed files dropped
+  into the directory (e.g. marketplace/plugin skills under `~/.claude/skills`).
+  Such content must be excluded via the repo's `.gitignore`, not by this skill.
+  If `git status` shows unexpected untracked files before a sync, surface them
+  to the user rather than silently committing them.
