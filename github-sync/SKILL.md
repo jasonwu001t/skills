@@ -37,6 +37,28 @@ repo paths are hardcoded in the skill itself.
    the suggested manual fix — do **not** auto-pull, rebase, merge, or
    force-push. This skill only ever does `add` → `commit` → `push`.
 
+## Pre-push secret & PII scan
+
+`sync.sh` automatically runs `scripts/scan_repo.py` over every git-tracked file
+**before** it commits or pushes each repo, because these repos may be public.
+It looks for secrets (private-key blocks; cloud, GitHub, Slack, Stripe and
+AI-provider keys; JWTs; and password- or api-key-style assignments) and
+personal info (emails, phone numbers, street addresses).
+
+If the scan finds anything, that repo is **not committed or pushed** and the
+findings are printed. When this happens:
+
+1. Show the user the findings exactly as printed (locations are redacted).
+2. The fix is almost always to **remove the sensitive data** from the repo,
+   then re-run.
+3. Only if the user explicitly confirms a finding is a genuine false positive,
+   add a narrow regex rule to `secret-scan-allow.txt` (copy it from
+   `secret-scan-allow.example.txt`; it's gitignored and per-user).
+
+Never edit the scanner, delete the scan call, or allowlist a real secret just
+to make a push go through — the whole point is to stop sensitive data reaching
+a public remote. Surface it to the user and let them decide.
+
 ## Example
 
 **Input:** "back up: finished the wsj-news fixes"
@@ -55,7 +77,8 @@ If nothing changed, report it plainly instead: `skills — already up to date, n
   `config.json`.
 - If `config.json` is missing, tell the user to create it from
   `config.example.json` and stop.
-- Requires `python3` (used only to parse the JSON config).
+- Requires `python3` (used to parse the JSON config and run the secret scan).
+- The pre-push scan is mandatory and must not be bypassed to force a push.
 - "Already up to date" is a success, not an error — report it plainly.
 - `sync.sh` runs `git add -A`, so it stages **everything** in the repo that
   isn't gitignored — including any third-party or tool-installed files dropped

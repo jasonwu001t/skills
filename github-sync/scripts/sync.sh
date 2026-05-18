@@ -54,6 +54,16 @@ while IFS=$'\t' read -r name path remote branch prefix; do
   [ -z "$branch" ] && branch="$(git -C "$path" rev-parse --abbrev-ref HEAD 2>/dev/null)"
 
   git -C "$path" add -A
+
+  # Safety net: never publish secrets / personal info to a (public) repo.
+  scan_out="$(python3 "$SKILL_DIR/scripts/scan_repo.py" "$path" 2>&1)"
+  if [ $? -ne 0 ]; then
+    printf '%s\n' "$scan_out" | sed 's/^/  /'
+    echo "  BLOCKED: not committing or pushing '$name' — resolve the findings above."
+    overall=1
+    continue
+  fi
+
   changes="$(git -C "$path" status --porcelain)"
   committed=0
   if [ -n "$changes" ]; then

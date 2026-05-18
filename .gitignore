@@ -16,8 +16,9 @@ node_modules/
 skill-creator/
 mcp-builder/
 
-# github-sync: per-user private repo list (ship config.example.json only)
+# github-sync: per-user private files (ship the .example.* versions only)
 github-sync/config.json
+github-sync/secret-scan-allow.txt
 
 # Skill runtime output / scratch data (regenerated on run)
 wsj-news/wsj_articles.json
