@@ -89,7 +89,7 @@ even if the user never says the word "privilege."
 
 ## Standard caveat (always include in output)
 
-> This is general privilege-hygiene guidance based on internal training, **not
+> This is general privilege-hygiene guidance — **not
 > legal advice and not a privilege determination**. Attorneys take the lead on
 > privilege calls — if anything here is sensitive or unclear, confirm with your
 > legal partner.

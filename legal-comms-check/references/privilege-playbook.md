@@ -1,7 +1,7 @@
 # Attorney-Client Privilege Playbook (reference)
 
-The full ruleset behind `legal-comms-check`. Distilled from U.S. attorney-client
-privilege training. Use this to assess and revise any communication to/with/about
+The full ruleset behind `legal-comms-check`. General U.S. attorney-client
+privilege guidance. Use this to assess and revise any communication to/with/about
 Legal. Section order: core rules → what is / isn't protected → marking guide →
 decision guide → review checklist → revision patterns → worked before/after
 examples → knowledge check.
@@ -153,7 +153,7 @@ examples → knowledge check.
 > warning label, what are our legal obligations/exposure?" (specific legal ask),
 > kept to need-to-know recipients.
 
-## 9. Knowledge check (from the training assessment)
+## 9. Knowledge check
 
 1. The attorney-client privilege protects the confidentiality of: **communications
    between attorneys and clients for the primary purpose of requesting or
